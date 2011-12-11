@@ -6,6 +6,7 @@
               as the first entry and export the buildfile again. -->
 <project basedir="." default="build" name="SecretJson">
     <property environment="env"/>
+    <property name="sj_sample.location" value="sample"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
@@ -14,6 +15,16 @@
     </path>
     <target name="init">
         <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="third_party/apache_commons_codec/src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="third_party/json/src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src">
                 <exclude name="**/*.java"/>
@@ -32,8 +43,23 @@
             <src path="src"/>
             <classpath refid="SecretJson.classpath"/>
         </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="third_party/apache_commons_codec/src"/>
+            <classpath refid="SecretJson.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="third_party/json/src"/>
+            <classpath refid="SecretJson.classpath"/>
+        </javac>
     </target>
-    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
+        <ant antfile="build.xml" dir="${sj_sample.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${sj_sample.location}" inheritAll="false" target="build">
+            <propertyset>
+                <propertyref name="build.compiler"/>
+            </propertyset>
+        </ant>
+    </target>
     <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
         <copy todir="${ant.library.dir}">
             <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
@@ -46,5 +72,10 @@
     <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
         <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
         <antcall target="build"/>
+    </target>
+    <target name="AESJsonObject">
+        <java classname="net.patrickz.onwork.secretjson.AESJsonObject" failonerror="true" fork="yes">
+            <classpath refid="SecretJson.classpath"/>
+        </java>
     </target>
 </project>
